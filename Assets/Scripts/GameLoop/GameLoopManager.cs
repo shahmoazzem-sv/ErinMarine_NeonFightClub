@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ExitGames.Client.Photon.StructWrapping;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,7 +71,7 @@ public class GameLoopManager : MonoBehaviour
                     break;
 
                 case GameState.InitialCardDistribution:
-
+                    stateMachine.SetState(new InitialCardDistributionState(this));
                     break;
 
                 // Additional cases for other states
@@ -86,6 +87,11 @@ public class GameLoopManager : MonoBehaviour
     public GameState GetCurrentState()
     {
         return currentState;
+    }
+
+    void Update()
+    {
+        stateMachine.Update();
     }
 
 

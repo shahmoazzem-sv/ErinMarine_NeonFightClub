@@ -20,7 +20,7 @@ public class StateMachine
     }
 
     // Update the current state (called every frame)
-    void Update()
+    public void Update()
     {
         if (currentState != null)
         {
