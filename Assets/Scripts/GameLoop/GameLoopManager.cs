@@ -44,6 +44,13 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] public Player player;
     [SerializeField] public AI ai;
     // Called when the game starts
+
+
+
+
+
+    // Add this line to GameLoopManager.cs, alongside 'heroDeck':
+    public CardDeck cardDeck { get; set; }
     void Awake()
     {
         // Initialize game state as 'None'
