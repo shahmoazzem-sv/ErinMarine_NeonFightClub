@@ -2172,7 +2172,7 @@ MonoBehaviour:
   mainMenuPanel: {fileID: 4808269592619223610}
   settingsPanel: {fileID: 6061895825265928105}
   quitPanel: {fileID: 1244679158}
-  gameSceneName: GameScene
+  gameSceneName: GameScene_Tanvir
 --- !u!222 &2162827899656637364
 CanvasRenderer:
   m_ObjectHideFlags: 0

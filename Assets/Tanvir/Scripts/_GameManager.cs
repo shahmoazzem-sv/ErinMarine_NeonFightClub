@@ -1,12 +1,13 @@
 using TMPro;
-using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class _GameManager : MonoBehaviour
 {
     private bool isGamePaused = false;
+    private InputAction pauseAction;
 
     [Header("UI Elements")]
     public Button submitButton;
@@ -20,6 +21,12 @@ public class _GameManager : MonoBehaviour
     [Header("Scene Management")]
     public string menuSceneName = "MainMenu";
 
+    private void Awake()
+    {
+        pauseAction = new InputAction(binding: "<Keyboard>/escape");
+        pauseAction.performed += context => TogglePause();
+    }
+
     private void Start()
     {
         Time.timeScale = 1f;
@@ -32,22 +39,32 @@ public class _GameManager : MonoBehaviour
             submitButton.onClick.AddListener(TriggerGameOver);
     }
 
-    void Update()
+    private void OnEnable()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (isGamePaused)
-            {
-                if (!settingsPanel.activeSelf)
-                    ResumeGame();
+        pauseAction.Enable();
+    }
 
-                else
-                    CloseSettings();
-            }
+    private void OnDisable()
+    {
+        pauseAction.Disable();
+        pauseAction.performed -= context => TogglePause();
+    }
+
+    private void TogglePause()
+    {
+        if (gameOverPanel.activeSelf) return;
+
+        if (isGamePaused)
+        {
+            if (!settingsPanel.activeSelf)
+                ResumeGame();
 
             else
-                PauseGame();
+                CloseSettings();
         }
+
+        else
+            PauseGame();
     }
 
     public void PauseGame()
@@ -69,9 +86,16 @@ public class _GameManager : MonoBehaviour
 
     public void OpenSettings()
     {
-        pauseMenuPanel.SetActive(false);
-        gameOverPanel.SetActive(false);
         settingsPanel.SetActive(true);
+
+        if (isGamePaused)
+            pauseMenuPanel.SetActive(false);
+
+        else if (gameOverPanel.activeSelf)
+            gameOverPanel.SetActive(false);
+
+        else
+            PauseGame();
     }
 
     public void CloseSettings()
@@ -91,7 +115,7 @@ public class _GameManager : MonoBehaviour
     public void TriggerGameOver()
     {
         Time.timeScale = 0f;
-        ShowGameOverScreen("Game Over!");
+        ShowGameOverScreen("GameOver!");
     }
 
     private void ShowGameOverScreen(string message)
