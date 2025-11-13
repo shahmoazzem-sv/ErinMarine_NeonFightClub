@@ -10,6 +10,7 @@ public class HeroCardSelectionState : IState
     private bool heroSelected;
     private bool heroSelectionPanelOpened;
 
+
     public HeroCardSelectionState(GameLoopManager gameLoopManager)
     {
         this.gameLoopManager = gameLoopManager;
@@ -42,12 +43,10 @@ public class HeroCardSelectionState : IState
         }
     }
 
-    // Method to initialize HeroDeck
+    // Method to initialize HeroDeck (Unchanged from previous fix)
     private void InitializeHeroDeck()
     {
         HeroDeck heroDeck = new HeroDeck();
-
-        // Load all Hero Cards from Resources folder
         CardScriptableObject[] heroCardSO = Resources.LoadAll<CardScriptableObject>("HeroCards");
 
         if (heroCardSO.Length != 8)
@@ -56,20 +55,17 @@ public class HeroCardSelectionState : IState
             return;
         }
 
-        // Ensure the cards are Hero cards and add them to HeroDeck
         foreach (var cardSO in heroCardSO)
         {
             if (cardSO.cardType == CardType.HeroCard)
             {
-                // FIX: Create the HeroCardData object (non-MonoBehaviour)
-                HeroCardData heroCardData = new HeroCardData // <-- FIX applied here
+                HeroCardData heroCardData = new HeroCardData
                 {
                     cardSO = cardSO,
                     HeroCardType = cardSO.heroCardType,
                     HeroClassType = cardSO.heroClassType,
                     HeroAge = cardSO.heroAge,
                 };
-                // Assuming HeroDeck.AddCard now accepts HeroCardData
                 heroDeck.AddCard(heroCardData);
             }
             else
@@ -93,72 +89,64 @@ public class HeroCardSelectionState : IState
 
     private void SetHeroSelectionUIPanelVisualization()
     {
-        //suffle card
         gameLoopManager.heroDeck.Shuffle();
 
-        // FIX: Draw HeroCardData objects from the deck
         HeroCardData heroCardOneData = gameLoopManager.heroDeck.DrawCard() as HeroCardData;
         HeroCardData heroCardTwoData = gameLoopManager.heroDeck.DrawCard() as HeroCardData;
 
-        // Set visualizer for card one
         gameLoopManager.HeroSelectionImageOne.sprite = heroCardOneData.cardSO.cardSprite;
         HeroCardSelectionVisualizer heroOneVisualizer = gameLoopManager.HeroSelectionImageOne.gameObject.GetComponent<HeroCardSelectionVisualizer>();
         heroOneVisualizer.cardSo = heroCardOneData.cardSO;
 
-        // Set visualizer for card two
         gameLoopManager.HeroSelectionImageTwo.sprite = heroCardTwoData.cardSO.cardSprite;
         HeroCardSelectionVisualizer heroTwoVisualizer = gameLoopManager.HeroSelectionImageTwo.gameObject.GetComponent<HeroCardSelectionVisualizer>();
         heroTwoVisualizer.cardSo = heroCardTwoData.cardSO;
 
-        // Enable the hero selection panel UI (buttons to select)
         Button buttonOne = gameLoopManager.HeroSelectionImageOne.GetComponent<Button>();
         Button buttonTwo = gameLoopManager.HeroSelectionImageTwo.GetComponent<Button>();
 
-        // FIX: Pass the HeroCardData objects to SelectHero
         buttonOne.onClick.AddListener(() => SelectHero(heroCardOneData));
         buttonTwo.onClick.AddListener(() => SelectHero(heroCardTwoData));
-
     }
 
     private void SelectAIHero()
     {
-        // FIX: Draw HeroCardData objects
         HeroCardData aiHeroCardOneData = gameLoopManager.heroDeck.DrawCard() as HeroCardData;
         HeroCardData aiHeroCardTwoData = gameLoopManager.heroDeck.DrawCard() as HeroCardData;
 
-        // Select one card randomly for AI (Data object)
         HeroCardData selectedAIHeroCardData = (UnityEngine.Random.Range(0, 2) == 0) ? aiHeroCardOneData : aiHeroCardTwoData;
 
         // 1. Attach the HeroCard component to the AI's GameObject
-        // This is where the MonoBehaviour is created.
         HeroCard aiHeroComponent = gameLoopManager.AIHeroCardGameObject.AddComponent<HeroCard>();
 
         // 2. Transfer data using the Initialize method
-        // Only pass the CardScriptableObject (cardSO) from the data object
         aiHeroComponent.Initialize(selectedAIHeroCardData.cardSO);
 
-        // 3. Store the ATTACHED component (MonoBehaviour)
+        // FIX 1: Directly assign the newly created component to the AI script's reference.
+        gameLoopManager.ai.aiHero = aiHeroComponent;
+
+        // 3. Store the ATTACHED component (MonoBehaviour) in GameLoopManager
         gameLoopManager.AIHeroCard = aiHeroComponent;
 
-        // Visuals are still updated later.
+        // REMOVED: gameLoopManager.ai.SetHeroCard(selectedAIHeroCardData.cardSO);
     }
 
 
-    // FIX: Method now accepts HeroCardData
     public void SelectHero(HeroCardData selectedHeroCardData)
     {
         CloseHeroSelectionPanel();
 
         // Attach the HeroCard component to the player's GameObject
-        // This is where the MonoBehaviour is created.
         HeroCard playerHeroComponent = gameLoopManager.playerHeroCardGameObject.AddComponent<HeroCard>();
 
         // 1. Set all properties in one call using the CardScriptableObject
         playerHeroComponent.Initialize(selectedHeroCardData.cardSO);
 
-        // The Initialize method should handle the sprite update, 
-        // but keeping this line for direct control if Initialize doesn't:
+        // Explicitly set the player's sprite here
         gameLoopManager.playerHeroCardGameObject.GetComponentInChildren<SpriteRenderer>().sprite = selectedHeroCardData.cardSO.cardSprite;
+
+        // FIX 2: Directly assign the newly created component to the Player script's reference.
+        gameLoopManager.player.playerHeroCard = playerHeroComponent;
 
         // Assign the *component* (MonoBehaviour) to the manager field
         gameLoopManager.playerHeroCard = playerHeroComponent;
@@ -169,26 +157,23 @@ public class HeroCardSelectionState : IState
         // Also move AI card
         UpdateAIHeroVisual();
 
+        // REMOVED: gameLoopManager.player.SetHeroCard(selectedHeroCardData.cardSO);
+
         heroSelected = true;
     }
 
-    // Update AI hero's visual after the player selects
+    // Update AI hero's visual after the player selects (Unchanged)
     private void UpdateAIHeroVisual()
     {
-        // This method relies on AIHeroCard being the attached MonoBehaviour component, which the fix ensures.
         HeroCard selectedAIHeroCard = gameLoopManager.AIHeroCard;
 
-        // Ensure AIHeroCardGameObject and SpriteRenderer are assigned
         if (gameLoopManager.AIHeroCardGameObject != null)
         {
             SpriteRenderer aiSpriteRenderer = gameLoopManager.AIHeroCardGameObject.GetComponentInChildren<SpriteRenderer>();
 
             if (aiSpriteRenderer != null && selectedAIHeroCard != null && selectedAIHeroCard.cardSO != null && selectedAIHeroCard.cardSO.cardSprite != null)
             {
-                // Assign the AI hero's card sprite to the AI's GameObject
                 aiSpriteRenderer.sprite = selectedAIHeroCard.cardSO.cardSprite;
-
-                // Move AI hero card to its position
                 selectedAIHeroCard.MoveToThePoint(gameLoopManager.AIHeroCardPlacePoint.position, selectedAIHeroCard.gameObject.transform.rotation);
             }
             else

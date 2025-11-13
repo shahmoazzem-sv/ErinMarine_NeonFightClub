@@ -40,13 +40,18 @@ public class GameLoopManager : MonoBehaviour
     [HideInInspector] public HeroCard AIHeroCard;
     public GameObject AIHeroCardGameObject;
     public Transform AIHeroCardPlacePoint;
-
+    [SerializeField] public Player player;
+    [SerializeField] public AI ai;
     // Called when the game starts
     void Awake()
     {
         // Initialize game state as 'None'
         currentState = GameState.None;
         ChangeState(GameState.HeroCardSelection);
+    }
+    void Start()
+    {
+
     }
 
     // Change state function
