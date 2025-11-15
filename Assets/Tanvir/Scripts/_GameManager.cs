@@ -1,12 +1,14 @@
 using TMPro;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class _GameManager : MonoBehaviour
 {
     private bool isGamePaused = false;
+    private InputAction pauseAction;
 
     [Header("UI Elements")]
     public Button submitButton;
@@ -17,8 +19,25 @@ public class _GameManager : MonoBehaviour
     public GameObject gameOverPanel;
     public TextMeshProUGUI gameOverText;
 
+    private CanvasGroup pauseMenuCanvasGroup;
+    private CanvasGroup gameOverCanvasGroup;
+
     [Header("Scene Management")]
     public string menuSceneName = "MainMenu";
+
+    private void Awake()
+    {
+        pauseMenuCanvasGroup = pauseMenuPanel.GetComponent<CanvasGroup>();
+        gameOverCanvasGroup = gameOverPanel.GetComponent<CanvasGroup>();
+
+        pauseAction = new InputAction(binding: "<Keyboard/escape");
+        pauseAction.performed += context => TogglePause();
+
+        // if (pauseMenuCanvasGroup != null || gameOverCanvasGroup !=null)
+        // {
+        //     Debug.LogError("CanvasGroup component is missing.");
+        // }
+    }
 
     private void Start()
     {
@@ -32,23 +51,47 @@ public class _GameManager : MonoBehaviour
             submitButton.onClick.AddListener(TriggerGameOver);
     }
 
-    void Update()
+    private void SetPanelInteractive(GameObject panel, bool isInteractive)
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        panel.SetActive(isInteractive); 
+
+        CanvasGroup group = panel.GetComponent<CanvasGroup>();
+        if (group != null)
         {
-            if (isGamePaused)
-            {
-                if (!settingsPanel.activeSelf)
-                    ResumeGame();
+            group.interactable = isInteractive;
 
-                else
-                    CloseSettings();
-            }
-
-            else
-                PauseGame();
+            group.blocksRaycasts = isInteractive;
         }
     }
+
+    private void OnEnable()
+    {
+        pauseAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        pauseAction.Disable();
+        pauseAction.performed -= context => TogglePause();
+    }
+
+    private void TogglePause()
+    {
+        if (gameOverPanel.activeSelf) return;
+
+        if (isGamePaused)
+        {
+            if (!settingsPanel.activeSelf)
+                ResumeGame();
+
+            else
+                CloseSettings();
+        }
+
+        else
+            PauseGame();
+    }
+
 
     public void PauseGame()
     {
@@ -91,6 +134,10 @@ public class _GameManager : MonoBehaviour
     public void TriggerGameOver()
     {
         Time.timeScale = 0f;
+
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayGameOverMusic();
+
         ShowGameOverScreen("Game Over!");
     }
 
