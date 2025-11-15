@@ -19,47 +19,56 @@ public class GameLoopManager : MonoBehaviour
 {
     private GameState currentState;
 
-    public HeroDeck heroDeck { get; set; } // Reference to HeroDeck
+    // References to other components (Assuming Player/AI scripts exist)
+    public Player player;
+    public AI ai;
 
-    public List<Card> heroCards = new List<Card>();
+    // --- DECK REFERENCES ---
+    public HeroDeck heroDeck { get; set; } // Reference to HeroDeck (stores ICard components now)
+    public CardDeck cardDeck { get; set; } // Reference to the main card deck
 
-    StateMachine stateMachine = new StateMachine();
+    // --- HERO CARD ASSET REFERENCES ---
+    [Header("Card Asset References")]
+    // The base Card Prefab (must have the Card component attached)
+    public GameObject cardPrefab;
+    // The common Sprite for the back of all cards (Move/Special/Hero)
+    public Sprite cardBackFaceSprite;
+    // Shuffle Speed (used in HeroCardSelectionState)
+    [Tooltip("Speed for visual shuffling (units/sec)")]
+    public float shuffleVisualSpeed = 5f;
 
-    [Header("Hero Selection Panel Enelemts")]
 
-
-    public GameObject heroSelectionUIPanel;
-    public Image HeroSelectionImageOne;
-    public Image HeroSelectionImageTwo;
+    // --- HERO CARD PLACEMENT TRANSFORMS ---
+    [Header("Hero Card Selection Points")]
+    // Spawn Min/Max points for random card spawning during selection
+    public Transform heroCardSpawnMinPoint;
+    public Transform heroCardSpawnMaxPoint;
 
     [Header("Player Hero Card Section")]
     [HideInInspector] public HeroCard playerHeroCard;
-    public GameObject playerHeroCardGameObject;
-    public Transform playerHeroCardPlacePoint;
+    // Removed playerHeroCardGameObject
+    public Transform playerHeroCardPlacePoint; // Final location for player's chosen hero
 
     [Header("AI Hero Card Section")]
     [HideInInspector] public HeroCard AIHeroCard;
-    public GameObject AIHeroCardGameObject;
-    public Transform AIHeroCardPlacePoint;
-    [SerializeField] public Player player;
-    [SerializeField] public AI ai;
+    // Removed AIHeroCardGameObject
+    public Transform AIHeroCardPlacePoint; // Final location for AI's chosen hero
+
+
+    // UI Panel (required for HeroCardSelectionState)
+    [Header("Hero Selection Panel Elements (Legacy UI)")]
+    public GameObject heroSelectionUIPanel;
+    // Note: The new state ignores HeroSelectionImageOne/Two and uses 3D cards instead.
+
+
+    StateMachine stateMachine = new StateMachine();
+
     // Called when the game starts
-
-
-
-
-
-    // Add this line to GameLoopManager.cs, alongside 'heroDeck':
-    public CardDeck cardDeck { get; set; }
     void Awake()
     {
         // Initialize game state as 'None'
         currentState = GameState.None;
         ChangeState(GameState.HeroCardSelection);
-    }
-    void Start()
-    {
-
     }
 
     // Change state function
@@ -78,10 +87,11 @@ public class GameLoopManager : MonoBehaviour
                     break;
 
                 case GameState.InitialCardDistribution:
-                    stateMachine.SetState(new InitialCardDistributionState(this));
+                    // Need to implement the InitialCardDistributionState later
+                    // stateMachine.SetState(new InitialCardDistributionState(this));
+                    Debug.Log("Entering Initial Card Distribution State (Placeholder)");
                     break;
 
-                // Additional cases for other states
                 default:
                     break;
             }
@@ -89,13 +99,11 @@ public class GameLoopManager : MonoBehaviour
     }
 
 
-
     // Get the current game state
     public GameState GetCurrentState()
     {
         return currentState;
     }
-
     void Update()
     {
         stateMachine.Update();

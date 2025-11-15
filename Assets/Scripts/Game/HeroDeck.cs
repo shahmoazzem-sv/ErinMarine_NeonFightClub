@@ -6,50 +6,46 @@ using UnityEngine; // Required for Random.Range
 
 public class HeroDeck // Assuming it implements IDeck, though IDeck is not provided
 {
-    // FIX: The deck stores HeroCardData (the plain C# data model), not the HeroCard component (MonoBehaviour).
-    private List<HeroCardData> deck = new List<HeroCardData>();
+    // The deck stores the actual visual components (HeroCard), which implement ICard.
+    private List<HeroCard> deck = new List<HeroCard>();
+
+    public int Count => deck.Count;
+
+    public void AddCard(HeroCard card)
+    {
+        deck.Add(card);
+    }
 
     public void Shuffle()
     {
+        // Standard Fisher-Yates shuffle algorithm
         for (int i = 0; i < deck.Count; i++)
         {
-            // The temp variable is HeroCardData
-            HeroCardData temp = deck[i];
+            HeroCard temp = deck[i];
+            // Randomly swap the current card with any card from the remaining part of the deck
             int randomIndex = UnityEngine.Random.Range(i, deck.Count);
             deck[i] = deck[randomIndex];
             deck[randomIndex] = temp;
         }
     }
 
-    // FIX: DrawCard returns HeroCardData (which implements ICard in the previous setup, 
-    // or should return HeroCardData if the deck's purpose is purely data storage).
-    // Based on the surrounding context, we assume HeroCardData is the expected return type
-    // that can be cast to ICard (or the deck should just return the data object).
-    // We return HeroCardData and rely on the calling code to cast/use it correctly.
-    // NOTE: For simplicity, we assume ICard means the data object interface/base class.
-    public object DrawCard() // Changed return type to object/HeroCardData if IDeck doesn't mandate ICard
+    // Draws the card from the top (index 0) and removes it from the deck.
+    public ICard DrawCard()
     {
         if (deck.Count > 0)
         {
-            HeroCardData drawnCard = deck[0];
+            HeroCard drawnCard = deck[0];
             deck.RemoveAt(0);
-            return drawnCard; // Returns the data object
+            return drawnCard;
         }
         return null;
     }
 
-    // This method is often unused in simple card selection stages, but is fixed for consistency.
-    public void DiscardCard(object card) // Changed parameter type from ICard to object/HeroCardData
+    public void DiscardCard(ICard card)
     {
-        if (card is HeroCardData heroCardData)
+        if (card is HeroCard heroCard)
         {
-            deck.Remove(heroCardData);
+            deck.Remove(heroCard);
         }
-    }
-
-    // FIX: AddCard accepts HeroCardData
-    public void AddCard(HeroCardData card)
-    {
-        deck.Add(card);
     }
 }

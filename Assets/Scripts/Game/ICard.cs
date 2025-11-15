@@ -8,4 +8,7 @@ public interface ICard
 
 
     void MoveToThePoint(Vector3 pointToMoveTo, Quaternion rotToMatch);
+
+    // FIX: Added the missing FlipCard method to the interface
+    void FlipCard(bool faceUp);
 }
