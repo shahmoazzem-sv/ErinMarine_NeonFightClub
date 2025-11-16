@@ -2231,6 +2231,8 @@ MonoBehaviour:
   AIHeroCardPlacePoint: {fileID: 105726215}
   heroSelectionUIPanel: {fileID: 1499688364}
   choseHeroText: {fileID: 466815244}
+  DeckPosition: {fileID: 1775276884}
+  DiscardDeckPosition: {fileID: 1663772199}
 --- !u!4 &995208201
 Transform:
   m_ObjectHideFlags: 0

@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UI;
 
 public class InitialCardDistributionState : IState
 {
     GameLoopManager gameLoopManager;
-
 
     public InitialCardDistributionState(GameLoopManager gameLoopManager)
     {
@@ -17,128 +14,118 @@ public class InitialCardDistributionState : IState
     public void Enter()
     {
         InitializeCardDeck();
-        // Transition to the next state after initialization
-        // gameLoopManager.ChangeState(GameState.GameRunning); 
+        // gameLoopManager.ChangeState(GameState.GameRunning);
     }
 
-    public void Exit()
-    {
+    public void Exit() { }
 
-    }
-
-    public void Update()
-    {
-
-    }
+    public void Update() { }
 
     void InitializeCardDeck()
     {
-        // if (gameLoopManager.cardPrefab == null || gameLoopManager.cardBackFaceSprite == null)
-        // {
-        //     Debug.LogError("Card Prefab or Card Back Face Sprite is not assigned in GameLoopManager. Cannot initialize card deck.");
-        //     return;
-        // }
+        if (gameLoopManager.cardPrefab == null || gameLoopManager.cardBackFaceSprite == null)
+        {
+            Debug.LogError("Card Prefab or Card Back Face Sprite is not assigned in GameLoopManager.");
+            return;
+        }
 
-        // CardDeck cardDeck = new CardDeck();
+        Transform deckPos = gameLoopManager.DeckPosition;
+        if (deckPos == null)
+        {
+            Debug.LogError("DeckPosition transform is missing in GameLoopManager.");
+            return;
+        }
 
-        // // Load all CardScriptableObjects from their respective Resources folders
-        // CardScriptableObject[] moveCardSOs = Resources.LoadAll<CardScriptableObject>("Movecard");
-        // CardScriptableObject[] specialCardSOs = Resources.LoadAll<CardScriptableObject>("SpecialCards");
+        CardDeck cardDeck = new CardDeck();
 
-        // // Helper function to find the specific CardScriptableObject and instantiate Card components.
-        // void AddCardsToDeck(CardScriptableObject[] cardSOs, CardType targetType, MoveCardType? moveType, SpecialCardType? specialType, int count)
-        // {
-        //     CardScriptableObject matchingSO = null;
-        //     Type requiredComponentType = null;
+        // Load ScriptableObjects
+        CardScriptableObject[] moveCardSOs = Resources.LoadAll<CardScriptableObject>("Movecards");
+        CardScriptableObject[] specialCardSOs = Resources.LoadAll<CardScriptableObject>("SpecialCards");
 
-        //     // Find the correct SO and determine the component type
-        //     foreach (var cardSO in cardSOs)
-        //     {
-        //         if (cardSO.cardType != targetType) continue;
+        // ------------------------------
+        // Helper: Add multiple instances of a card
+        // ------------------------------
+        void AddCardCopies(
+            CardScriptableObject[] sourceArray,
+            CardType type,
+            MoveCardType? moveType,
+            SpecialCardType? specialType,
+            int count)
+        {
+            CardScriptableObject so = null;
 
-        //         if (targetType == CardType.MoveCard && cardSO.moveCardType == moveType)
-        //         {
-        //             matchingSO = cardSO;
-        //             requiredComponentType = typeof(MoveCard);
-        //             break;
-        //         }
-        //         else if (targetType == CardType.SpecialCard && cardSO.specialCardType == specialType)
-        //         {
-        //             matchingSO = cardSO;
-        //             requiredComponentType = typeof(SpecialCard);
-        //             break;
-        //         }
-        //     }
+            foreach (var c in sourceArray)
+            {
+                if (c.cardType != type) continue;
 
-        //     if (matchingSO == null)
-        //     {
-        //         Debug.LogError($"Required CardScriptableObject not found for {targetType}.");
-        //         return;
-        //     }
+                if (type == CardType.MoveCard && c.moveCardType == moveType)
+                    so = c;
 
-        //     // Instantiate and Initialize the required number of cards
-        //     for (int i = 0; i < count; i++)
-        //     {
-        //         // Instantiate the Card Prefab at the deck's location, initially
-        //         GameObject cardGO = GameObject.Instantiate(gameLoopManager.cardPrefab, gameLoopManager.deckPlacePoint.position, Quaternion.identity);
+                if (type == CardType.SpecialCard && c.specialCardType == specialType)
+                    so = c;
+            }
 
-        //         // Add the correct derived Card component and initialize it
-        //         ICard cardComponent = null;
+            if (so == null)
+            {
+                Debug.LogError($"SO for {type} not found!");
+                return;
+            }
 
-        //         if (requiredComponentType == typeof(MoveCard))
-        //         {
-        //             // AddComponent returns the component instance
-        //             MoveCard moveCard = cardGO.AddComponent<MoveCard>();
-        //             // Initialize the instance
-        //             moveCard.Initialize(matchingSO, gameLoopManager.cardBackFaceSprite);
-        //             cardComponent = moveCard;
-        //         }
-        //         else if (requiredComponentType == typeof(SpecialCard))
-        //         {
-        //             SpecialCard specialCard = cardGO.AddComponent<SpecialCard>();
-        //             specialCard.Initialize(matchingSO, gameLoopManager.cardBackFaceSprite);
-        //             cardComponent = specialCard;
-        //         }
+            for (int i = 0; i < count; i++)
+            {
+                GameObject cardGO = GameObject.Instantiate(gameLoopManager.cardPrefab);
 
-        //         // Remove the base Card component if it exists on the prefab before adding the specific one
-        //         if (cardGO.GetComponent<Card>() != null && cardGO.GetComponent<Card>().GetType() != requiredComponentType)
-        //         {
-        //             // Safely destroy any conflicting base Card script if the prefab was set up incorrectly
-        //             // For best practice, the prefab should only contain visual/collider components.
-        //         }
+                // Physical stacking
+                cardGO.transform.position = new Vector3(
+                    deckPos.position.x,
+                    deckPos.position.y + (i * 0.02f),
+                    deckPos.position.z
+                );
 
+                ICard cardComponent = null;
 
-        //         if (cardComponent != null)
-        //         {
-        //             // Add the initialized component to the deck
-        //             cardDeck.AddCard(cardComponent);
-        //         }
-        //         else
-        //         {
-        //             Debug.LogError($"Failed to add correct component for {matchingSO.name}. Destroying object.");
-        //             GameObject.Destroy(cardGO);
-        //         }
-        //     }
-        //     }
+                if (type == CardType.MoveCard)
+                {
+                    MoveCard mc = cardGO.AddComponent<MoveCard>();
+                    mc.Initialize(so, gameLoopManager.cardBackFaceSprite);
+                    cardComponent = mc;
+                }
+                else if (type == CardType.SpecialCard)
+                {
+                    SpecialCard sc = cardGO.AddComponent<SpecialCard>();
+                    sc.Initialize(so, gameLoopManager.cardBackFaceSprite);
+                    cardComponent = sc;
+                }
 
-        //     // --- Deck Build Logic ---
-        //     // Move Cards (24 total)
-        //     AddCardsToDeck(moveCardSOs, CardType.MoveCard, MoveCardType.LightAttack, null, 8);
-        //     AddCardsToDeck(moveCardSOs, CardType.MoveCard, MoveCardType.MediumAttack, null, 8);
-        //     AddCardsToDeck(moveCardSOs, CardType.MoveCard, MoveCardType.StrongAttack, null, 8);
+                if (cardComponent == null)
+                {
+                    Debug.LogError("Failed to add card component. Destroying object.");
+                    GameObject.Destroy(cardGO);
+                    continue;
+                }
 
-        //     // Special Cards (22 total)
-        //     AddCardsToDeck(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.BlockCard, 6);
-        //     AddCardsToDeck(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.FuryCard, 6);
-        //     AddCardsToDeck(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.StageAttackCard, 6);
-        //     AddCardsToDeck(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.FrenzyCard, 2);
-        //     AddCardsToDeck(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.BlitzCard, 2);
+                cardComponent.IsFacingUp = false;
+                cardDeck.AddCard(cardComponent);
+            }
+        }
 
-        //     // Assign the final deck to GameLoopManager
-        //     cardDeck.Shuffle();
-        //     gameLoopManager.cardDeck = cardDeck;
+        // ------------------------------
+        // Build the final deck
+        // ------------------------------
+        AddCardCopies(moveCardSOs, CardType.MoveCard, MoveCardType.LightAttack, null, 8);
+        AddCardCopies(moveCardSOs, CardType.MoveCard, MoveCardType.MediumAttack, null, 8);
+        AddCardCopies(moveCardSOs, CardType.MoveCard, MoveCardType.StrongAttack, null, 8);
 
-        //     Debug.Log($"Main Card Deck initialized and shuffled with {cardDeck.Count} cards.");
+        AddCardCopies(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.BlockCard, 6);
+        AddCardCopies(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.FuryCard, 6);
+        AddCardCopies(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.StageAttackCard, 6);
+        AddCardCopies(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.FrenzyCard, 2);
+        AddCardCopies(specialCardSOs, CardType.SpecialCard, null, SpecialCardType.BlitzCard, 2);
 
+        // Finalize
+        cardDeck.Shuffle();
+        gameLoopManager.cardDeck = cardDeck;
+
+        Debug.Log("Card Deck Initialized with " + cardDeck.Count + " cards.");
     }
 }

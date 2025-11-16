@@ -67,6 +67,12 @@ public class GameLoopManager : MonoBehaviour
     StateMachine stateMachine = new StateMachine();
 
     // Called when the game starts
+
+
+    // initial Card distribution face
+
+    public Transform DeckPosition;
+    public Transform DiscardDeckPosition;
     void Awake()
     {
         // Initialize game state as 'None'
@@ -92,7 +98,8 @@ public class GameLoopManager : MonoBehaviour
                 case GameState.InitialCardDistribution:
                     // Need to implement the InitialCardDistributionState later
                     // stateMachine.SetState(new InitialCardDistributionState(this));
-                    Debug.Log("Entering Initial Card Distribution State (Placeholder)");
+                    // Debug.Log("Entering Initial Card Distribution State (Placeholder)");
+                    stateMachine.SetState(new InitialCardDistributionState(this));
                     break;
 
                 default:

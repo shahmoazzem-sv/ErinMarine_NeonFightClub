@@ -116,7 +116,7 @@ public class HeroCardSelectionState : IState
             }
         }
         gameLoopManager.heroDeck = heroDeck;
-        Debug.Log($"Hero Deck initialized with {heroCardSO.Length} cards.");
+        // Debug.Log($"Hero Deck initialized with {heroCardSO.Length} cards.");
     }
 
     // --- STEP 2: PRESENTATION ---
@@ -165,7 +165,7 @@ public class HeroCardSelectionState : IState
 
         for (int iteration = 0; iteration < iterations; iteration++)
         {
-            Debug.Log($"Shuffle Iteration: {iteration + 1}");
+            // Debug.Log($"Shuffle Iteration: {iteration + 1}");
 
             for (int s = 0; s < swapsPerIteration; s++)
             {
@@ -195,7 +195,7 @@ public class HeroCardSelectionState : IState
     {
         if (spawnedHeroCards.Count < 2)
         {
-            Debug.LogError("Not enough cards for selection.");
+            // Debug.LogError("Not enough cards for selection.");
             yield break;
         }
 
@@ -229,7 +229,7 @@ public class HeroCardSelectionState : IState
 
         // 4. Subscribe and Wait for player input
         HeroCard.OnCardSelected += HandlePlayerCardSelection;
-        Debug.Log("Waiting for player to select a Hero Card...");
+        // Debug.Log("Waiting for player to select a Hero Card...");
         yield return new WaitUntil(() => chosenPlayerCard != null);
 
         // --- SELECTION IS COMPLETE ---
@@ -323,7 +323,7 @@ public class HeroCardSelectionState : IState
         // Only face up the chosen card
         chosenAICard.IsFacingUp = true;
 
-        yield return new WaitForSeconds(chosenAICard.flipDuration + 0.5f);
+        yield return new WaitForSeconds(chosenAICard.flipDuration + 1f);
 
         // --- 4. Assign selection ---
         gameLoopManager.AIHeroCard = chosenAICard;
