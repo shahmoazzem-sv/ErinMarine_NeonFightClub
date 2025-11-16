@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ExitGames.Client.Photon.StructWrapping;
 using JetBrains.Annotations;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -59,6 +60,8 @@ public class GameLoopManager : MonoBehaviour
     [Header("Hero Selection Panel Elements (Legacy UI)")]
     public GameObject heroSelectionUIPanel;
     // Note: The new state ignores HeroSelectionImageOne/Two and uses 3D cards instead.
+
+    [SerializeField] public TMP_Text choseHeroText;
 
 
     StateMachine stateMachine = new StateMachine();

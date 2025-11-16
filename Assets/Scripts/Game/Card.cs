@@ -102,7 +102,7 @@ public abstract class Card : MonoBehaviour, ICard
     protected IEnumerator FlipCoroutine(bool faceUp)
     {
         Quaternion startRotation = transform.rotation;
-        Quaternion targetRotation = faceUp ? Quaternion.Euler(0, 0, 0) : Quaternion.Euler(0, 180, 0);
+        Quaternion targetRotation = faceUp ? Quaternion.Euler(0, 0, 0) : Quaternion.Euler(0, 0, 180);
 
         float timeElapsed = 0f;
 

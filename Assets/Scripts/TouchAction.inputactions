@@ -1,0 +1,35 @@
+{
+    "version": 1,
+    "name": "TouchAction",
+    "maps": [
+        {
+            "name": "Touch",
+            "id": "f1cc9129-3c1a-4ac9-b19a-1cd5b7d9ecce",
+            "actions": [
+                {
+                    "name": "selectCard",
+                    "type": "Value",
+                    "id": "3a2620a8-abd8-4b1e-8527-13cd46b59c08",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cfed5394-cffa-4856-aee2-dadbb7e8367b",
+                    "path": "<Touchscreen>/primaryTouch/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "selectCard",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

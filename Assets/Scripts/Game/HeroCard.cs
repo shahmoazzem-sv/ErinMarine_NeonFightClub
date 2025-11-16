@@ -1,10 +1,15 @@
 using UnityEngine;
+using System;
 
 public class HeroCard : Card
 {
+    // 📢 STATIC EVENT: Any script can subscribe to this. It reports the HeroCard instance that was clicked.
+    public static Action<HeroCard> OnCardSelected;
     public HeroCardType HeroCardType { get; set; }
     public HeroClassType HeroClassType { get; set; }
     public int HeroAge { get; set; }
+
+    public bool IsSelected { get; set; } // Flag to check if the card is selected
 
     // NOTE: The previous 'public CardScriptableObject cardSO { get; set; }' is REMOVED
     // The data is now accessed via the inherited 'CardSO' property.
@@ -40,5 +45,16 @@ public class HeroCard : Card
     public override void MoveToThePoint(Vector3 pointToMoveTo, Quaternion rotToMatch)
     {
         base.MoveToThePoint(pointToMoveTo, rotToMatch);
+    }
+
+    public void SelectCard()
+    {
+        if (!IsSelected)
+        {
+            IsSelected = true;
+            Debug.Log($"Hero card {CardSO.name} is selected");
+
+            OnCardSelected?.Invoke(this);
+        }
     }
 }
